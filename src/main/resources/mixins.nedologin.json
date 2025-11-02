@@ -6,8 +6,5 @@
   "server": [
     "MixinPlayerManager"
   ],
-  "minVersion": "0.8",
-  "client": [
-    "MixinTitleScreen"
-  ]
+  "minVersion": "0.8"
 }

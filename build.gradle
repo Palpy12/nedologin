@@ -115,13 +115,4 @@ publishing {
             // jarJar.component(it)
         }
     }
-    repositories {
-        maven {
-            credentials {
-                username "${mmuser}"
-                password "${mmpassword}"
-            }
-            url = "https://maven.marduk.ru/"
-        }
-    }
 }
