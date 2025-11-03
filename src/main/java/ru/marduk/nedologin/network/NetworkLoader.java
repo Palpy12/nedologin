@@ -1,33 +1,19 @@
 package ru.marduk.nedologin.network;
 
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import ru.marduk.nedologin.NLConstants;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.util.Identifier;
 
-@EventBusSubscriber(modid = NLConstants.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class NetworkLoader {
+    public static final Identifier REQUEST_LOGIN = Identifier.of("nedologin", "request_login");
+    public static final Identifier LOGIN = Identifier.of("nedologin", "login");
+    public static final Identifier CHANGE_PASSWORD = Identifier.of("nedologin", "change_password");
+    public static final Identifier CHANGE_PASSWORD_RESPONSE = Identifier.of("nedologin", "change_password_response");
 
-    @SubscribeEvent
-    public static void register(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1.1");
-        registrar.playToClient(
-                MessageRequestLogin.TYPE,
-                MessageRequestLogin.STREAM_CODEC,
-                MessageRequestLogin::handle);
-        registrar.playToServer(
-                MessageLogin.TYPE,
-                MessageLogin.STREAM_CODEC,
-                MessageLogin::handle);
-        registrar.playToServer(
-                MessageChangePassword.TYPE,
-                MessageChangePassword.STREAM_CODEC,
-                MessageChangePassword::handle);
-        registrar.playToClient(
-                MessageChangePasswordResponse.TYPE,
-                MessageChangePasswordResponse.STREAM_CODEC,
-                MessageChangePasswordResponse::handle);
+    public static void register() {
+        ServerPlayNetworking.registerGlobalReceiver(LOGIN, (server, player, handler, buf, responseSender) -> {
+            String password = buf.readString();
+            player.server().execute(() -> MessageLogin.handle(player, password));
+        });
     }
 
     private NetworkLoader() {

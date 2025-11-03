@@ -1,7 +1,7 @@
 package ru.marduk.nedologin.client;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import ru.marduk.nedologin.Nedologin;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public final class PasswordHolder {
     private static PasswordHolder INSTANCE;
 

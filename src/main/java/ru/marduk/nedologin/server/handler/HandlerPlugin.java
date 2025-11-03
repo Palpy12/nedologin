@@ -1,6 +1,7 @@
 package ru.marduk.nedologin.server.handler;
 
-import net.minecraft.server.level.ServerPlayer;
+
+import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -17,21 +18,21 @@ public interface HandlerPlugin {
      *
      * @param player player joining in
      */
-    void preLogin(ServerPlayer player, Login login);
+    void preLogin(ServerPlayerEntity player, Login login);
 
     /**
      * Called only once when the player log in successfully
      *
      * @param player player logging in
      */
-    void postLogin(ServerPlayer player, Login login);
+    void postLogin(ServerPlayerEntity player, Login login);
 
     /**
      * Called only once before the player leaving server
      *
      * @param player player leaving server
      */
-    void preLogout(ServerPlayer player);
+    void preLogout(ServerPlayerEntity player);
 
     /**
      * Called only once when the plugin is disabled

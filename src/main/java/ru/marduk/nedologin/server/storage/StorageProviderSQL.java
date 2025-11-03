@@ -1,9 +1,7 @@
 package ru.marduk.nedologin.server.storage;
 
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.world.level.GameType;
-import at.favre.lib.crypto.bcrypt.*;
-import ru.marduk.nedologin.NLConfig;
+import org.mindrot.jbcrypt.BCrypt;
 import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.Nedologin;
 
@@ -86,11 +84,10 @@ public abstract class StorageProviderSQL implements StorageProvider {
         if (registered(username)) return;
         try {
             checkValidity();
-            PreparedStatement st = conn.prepareStatement("INSERT INTO nl_entries (username, password, defaultGameType)\n" +
+            PreparedStatement st = conn.prepareStatement("INSERT INTO nl_entries (username, password)\n" +
                     "VALUES (?, ?, ?)");
             st.setString(1, username);
             st.setString(2, BCrypt.with(BCrypt.Version.VERSION_2Y).hashToString(NLConstants.BCRYPT_COST, password.toCharArray()));
-            st.setInt(3, NLConfig.SERVER.defaultGameType.get());
             st.execute();
         } catch (SQLException ex) {
             Nedologin.logger.error("Error registering entry", ex);
@@ -100,40 +97,6 @@ public abstract class StorageProviderSQL implements StorageProvider {
     @Override
     public void save() {
         // NO-OP
-    }
-
-    @Override
-    public GameType gameType(String username) {
-        try {
-            checkValidity();
-            PreparedStatement st = conn.prepareStatement("""
-                    SELECT defaultGameType
-                    FROM nl_entries
-                    where username = ?""");
-            st.setString(1, username);
-            ResultSet rs = st.executeQuery();
-            if (!rs.next()) return null;
-            return GameType.byId(rs.getInt("defaultGameType"));
-        } catch (SQLException ex) {
-            Nedologin.logger.error("Error looking up entry", ex);
-            return GameType.byId(NLConfig.SERVER.defaultGameType.get());
-        }
-    }
-
-    @Override
-    public void setGameType(String username, GameType gameType) {
-        try {
-            checkValidity();
-            PreparedStatement st = conn.prepareStatement("""
-                    UPDATE nl_entries
-                    SET defaultGameType=?
-                    WHERE username = ?""");
-            st.setInt(1, gameType.getId());
-            st.setString(2, username);
-            st.execute();
-        } catch (SQLException ex) {
-            Nedologin.logger.error("Error updating entry", ex);
-        }
     }
 
     @Override

@@ -1,15 +1,14 @@
 package ru.marduk.nedologin.server.storage;
 
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
-import ru.marduk.nedologin.NLConstants;
+import ru.marduk.nedologin.utils.ServerUtil;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public final class StorageProviderSQLite extends StorageProviderSQL {
+
+
     public StorageProviderSQLite() throws SQLException {
-        // Default path at $WORLD_DIR/sl_entries.dat
-        super(DriverManager.getConnection("jdbc:sqlite:" +
-                ServerLifecycleHooks.getCurrentServer().getWorldPath(NLConstants.NL_ENTRY)));
+        super(DriverManager.getConnection("jdbc:sqlite:" + ServerUtil.getServerRoot().resolve("nl_entries.db")));
     }
 }

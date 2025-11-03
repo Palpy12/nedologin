@@ -2,18 +2,15 @@ package ru.marduk.nedologin.server.handler;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import ru.marduk.nedologin.Nedologin;
 import ru.marduk.nedologin.server.storage.NLStorage;
 import ru.marduk.nedologin.server.NLRegistries;
+import ru.marduk.nedologin.utils.ServerUtil;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +21,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-@OnlyIn(Dist.DEDICATED_SERVER)
 public final class PlayerLoginHandler {
     private static PlayerLoginHandler INSTANCE;
 
@@ -32,14 +28,14 @@ public final class PlayerLoginHandler {
     private final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(2, new ThreadFactoryBuilder()
             .setNameFormat("Nedologin-Worker-%d")
             .build());
-    private final Map<ResourceLocation, HandlerPlugin> plugins = new ConcurrentHashMap<>();
+    private final Map<Identifier, HandlerPlugin> plugins = new ConcurrentHashMap<>();
 
-    private PlayerLoginHandler(Stream<ResourceLocation> plugins) {
+    private PlayerLoginHandler(Stream<Identifier> plugins) {
         // Load plugins
         plugins.forEach(this::loadPlugin);
     }
 
-    public void loadPlugin(ResourceLocation rl) {
+    public void loadPlugin(Identifier rl) {
         if (this.plugins.containsKey(rl)) return;
         Nedologin.logger.info("Loading plugin {}", rl.toString());
         HandlerPlugin plugin = NLRegistries.PLUGINS.get(rl).orElseThrow(() -> {
@@ -51,18 +47,18 @@ public final class PlayerLoginHandler {
         plugin.enable(executor);
     }
 
-    public void unloadPlugin(ResourceLocation rl) {
+    public void unloadPlugin(Identifier rl) {
         Optional.ofNullable(plugins.remove(rl)).ifPresent(p -> {
             p.disable();
             Nedologin.logger.info("Unloaded plugin {}", rl.toString());
         });
     }
 
-    public Collection<ResourceLocation> listPlugins() {
-        return new ImmutableSet.Builder<ResourceLocation>().addAll(this.plugins.keySet()).build();
+    public Collection<Identifier> listPlugins() {
+        return new ImmutableSet.Builder<Identifier>().addAll(this.plugins.keySet()).build();
     }
 
-    public static void initLoginHandler(Stream<ResourceLocation> pluginList) {
+    public static void initLoginHandler(Stream<Identifier> pluginList) {
         if (INSTANCE != null) throw new IllegalStateException();
         INSTANCE = new PlayerLoginHandler(pluginList);
     }
@@ -75,9 +71,9 @@ public final class PlayerLoginHandler {
 
     public void login(String id, String pwd) {
         id = id.toLowerCase();
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        MinecraftServer server = ServerUtil.getServer();
         Login login = getLoginByName(id);
-        ServerPlayer player = server.getPlayerList().getPlayerByName(id);
+        ServerPlayerEntity player = server.getPlayerManager().getPlayer(id);
 
         // Though player shouldn't be null if login is not null
         if (login == null || player == null) {
@@ -95,22 +91,23 @@ public final class PlayerLoginHandler {
             postLogin(player, login);
         } else {
             Nedologin.logger.warn("Player {} tried to login with a wrong password.", id);
-            player.connection.disconnect(Component.literal("Wrong Password."));
+            //player.onDisconnect();
+            player.networkHandler.disconnect(Text.literal("Wrong Password."));
         }
     }
 
-    public void playerJoin(final ServerPlayer player) {
+    public void playerJoin(final ServerPlayerEntity player) {
         Login login = new Login(player);
         loginList.add(login);
         plugins.values().forEach(p -> p.preLogin(player, login));
     }
 
-    public void playerLeave(final ServerPlayer player) {
-        loginList.removeIf(l -> l.name.equals(player.getGameProfile().getName()));
+    public void playerLeave(final ServerPlayerEntity player) {
+        loginList.removeIf(l -> l.name.equals(player.getStringifiedName()));
         plugins.values().forEach(p -> p.preLogout(player));
     }
 
-    public void postLogin(final ServerPlayer player, final Login login) {
+    public void postLogin(final ServerPlayerEntity player, final Login login) {
         plugins.values().forEach(p -> p.postLogin(player, login));
     }
 
@@ -133,7 +130,6 @@ public final class PlayerLoginHandler {
         }
     }
 
-    @Nullable
     private Login getLoginByName(String name) {
         return loginList.stream().filter(l -> l.name.equals(name)).findAny().orElse(null);
     }

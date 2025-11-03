@@ -1,13 +1,10 @@
 package ru.marduk.nedologin.server.storage;
 
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Identifier;
 import ru.marduk.nedologin.Nedologin;
 import ru.marduk.nedologin.server.NLRegistries;
 
-@OnlyIn(Dist.DEDICATED_SERVER)
 public class NLStorage {
     public final StorageProvider storageProvider;
     private static NLStorage INSTANCE;
@@ -16,19 +13,18 @@ public class NLStorage {
         return INSTANCE;
     }
 
-    public static void initialize(String provider, ServerStartingEvent event) {
+    public static void initialize(String provider, MinecraftServer server) {
         if (INSTANCE == null) {
             try {
-                INSTANCE = new NLStorage(provider);
+                INSTANCE = new NLStorage(provider, server);
             } catch (Exception e) {
                 Nedologin.logger.fatal("Failed to initialize login provider '{}': {}", provider, e.getMessage());
-                event.getServer().halt(false);
             }
         }
     }
 
-    private NLStorage(String provider) {
-        storageProvider = NLRegistries.STORAGE_PROVIDERS.get(ResourceLocation.parse(provider))
+    private NLStorage(String provider, MinecraftServer server) {
+        storageProvider = NLRegistries.STORAGE_PROVIDERS.get(Identifier.of("nedologin", provider))
                 .orElseThrow(() -> new RuntimeException("Storage provider not found: " + provider))
                 .get();
     }

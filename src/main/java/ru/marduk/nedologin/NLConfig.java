@@ -1,8 +1,5 @@
 package ru.marduk.nedologin;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -18,10 +15,6 @@ public final class NLConfig {
         public final ModConfigSpec.ConfigValue<Boolean> enableChangePassword;
 
         public final ModConfigSpec.ConfigValue<String> storageProvider;
-
-        public final ModConfigSpec.IntValue defaultGameType;
-
-        public final ModConfigSpec.ConfigValue<List<? extends String>> plugins;
 
         Server(ModConfigSpec.Builder builder) {
             builder.push("server");

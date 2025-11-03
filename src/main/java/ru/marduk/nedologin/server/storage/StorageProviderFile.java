@@ -2,14 +2,10 @@ package ru.marduk.nedologin.server.storage;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
-import net.minecraft.world.level.GameType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import org.mindrot.jbcrypt.BCrypt;
 import ru.marduk.nedologin.NLConfig;
 import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.Nedologin;
-import at.favre.lib.crypto.bcrypt.*;
-import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,8 +16,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ThreadSafe
-@OnlyIn(Dist.DEDICATED_SERVER)
 public class StorageProviderFile implements StorageProvider {
     private final Gson gson = new Gson();
     private final Path path;
@@ -47,7 +41,7 @@ public class StorageProviderFile implements StorageProvider {
     @Override
     public boolean checkPassword(String username, String password) {
         if (entries.containsKey(username)) {
-            return BCrypt.verifyer().verify(password.toCharArray(), entries.get(username).password).verified;
+            return BCrypt.checkpw(username, password);
         }
         return false;
     }
@@ -83,19 +77,6 @@ public class StorageProviderFile implements StorageProvider {
     }
 
     @Override
-    public GameType gameType(String username) {
-        return GameType.byId(entries.get(username).gameType);
-    }
-
-    @Override
-    public void setGameType(String username, GameType gameType) {
-        if (entries.containsKey(username)) {
-            dirty = true;
-            entries.get(username).gameType = gameType.getId();
-        }
-    }
-
-    @Override
     public void changePassword(String username, String newPassword) {
         if (entries.containsKey(username)) {
             dirty = true;
@@ -117,12 +98,10 @@ public class StorageProviderFile implements StorageProvider {
         POJOUserEntry entry = new POJOUserEntry();
         entry.username = username;
         entry.password = password;
-        entry.gameType = NLConfig.SERVER.defaultGameType.get();
         return entry;
     }
 
     private static class POJOUserEntry {
         public String password, username;
-        public int gameType;
     }
 }
