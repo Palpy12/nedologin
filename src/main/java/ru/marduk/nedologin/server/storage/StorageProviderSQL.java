@@ -43,7 +43,8 @@ public abstract class StorageProviderSQL implements StorageProvider {
             ResultSet rs = st.executeQuery();
             if (!rs.next()) return false;
 
-            return BCrypt.verifyer().verify(password.toCharArray(), rs.getString("password")).verified;
+            return true;
+            //return BCrypt.verifyer().verify(password.toCharArray(), rs.getString("password")).verified;
         } catch (SQLException ex) {
             Nedologin.logger.error("Error looking up password", ex);
             return false;
@@ -87,7 +88,7 @@ public abstract class StorageProviderSQL implements StorageProvider {
             PreparedStatement st = conn.prepareStatement("INSERT INTO nl_entries (username, password)\n" +
                     "VALUES (?, ?, ?)");
             st.setString(1, username);
-            st.setString(2, BCrypt.with(BCrypt.Version.VERSION_2Y).hashToString(NLConstants.BCRYPT_COST, password.toCharArray()));
+            st.setString(2, /*BCrypt.with(BCrypt.Version.VERSION_2Y).hashToString(NLConstants.BCRYPT_COST, password.toCharArray())*/"t");
             st.execute();
         } catch (SQLException ex) {
             Nedologin.logger.error("Error registering entry", ex);
@@ -97,43 +98,6 @@ public abstract class StorageProviderSQL implements StorageProvider {
     @Override
     public void save() {
         // NO-OP
-    }
-
-    @Override
-    public void changePassword(String username, String newPassword) {
-        try {
-            checkValidity();
-            PreparedStatement st = conn.prepareStatement("""
-                    UPDATE nl_entries
-                    SET password=?
-                    WHERE username = ?""");
-            st.setString(1, BCrypt.with(BCrypt.Version.VERSION_2Y).hashToString(NLConstants.BCRYPT_COST, newPassword.toCharArray()));
-            st.setString(2, username);
-            st.execute();
-        } catch (SQLException ex) {
-            Nedologin.logger.error("Error updating entry", ex);
-        }
-    }
-
-    @Override
-    public boolean dirty() {
-        // We don't need to save
-        return false;
-    }
-
-    @Override
-    public Collection<String> getAllRegisteredUsername() {
-        ImmutableSet.Builder<String> builder = ImmutableSet.builder();
-        try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT username\n" +
-                    "FROM nl_entries");
-            while (rs.next()) {
-                builder.add(rs.getString("username"));
-            }
-        } catch (SQLException ex) {
-            Nedologin.logger.error("Error looking up entry", ex);
-        }
-        return builder.build();
     }
 
     // Reconnects the server to the database in case the connection becomes invalid

@@ -1,20 +1,29 @@
 package ru.marduk.nedologin.server;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.util.Identifier;
+import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.Nedologin;
 import ru.marduk.nedologin.server.handler.PlayerLoginHandler;
 import ru.marduk.nedologin.server.storage.NLStorage;
-import ru.marduk.nedologin.NLConfig;
+//import ru.marduk.nedologin.NLConfig;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 public final class ServerLoader {
 
     public static void serverSetup() {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            NLStorage.initialize(NLConfig.SERVER.storageProvider.get());
-
-            PlayerLoginHandler.initLoginHandler(NLConfig.SERVER.plugins.get().stream().map(ResourceLocation::parse));
+            NLConstants.setServer(server);
+            NLStorage.initialize("file");
+            Stream<Identifier> plugins = Stream.of(
+                    Identifier.of("nedologin", "auto_save")/*,
+                    Identifier.of("nedologin", "protect_coord")*/,
+                    Identifier.of("nedologin", "restrict_game_type"),
+                    Identifier.of("nedologin", "timeout")/*,
+                    Identifier.of("nedologin", "restrict_movement")*/);
+            PlayerLoginHandler.initLoginHandler(plugins);
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {

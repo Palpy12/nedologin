@@ -1,33 +1,31 @@
 package ru.marduk.nedologin.server.handler;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
+import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.Nedologin;
-import ru.marduk.nedologin.server.storage.NLStorage;
 import ru.marduk.nedologin.server.NLRegistries;
-import ru.marduk.nedologin.utils.ServerUtil;
+import ru.marduk.nedologin.server.storage.NLStorage;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 public final class PlayerLoginHandler {
     private static PlayerLoginHandler INSTANCE;
 
     private final Set<Login> loginList = ConcurrentHashMap.newKeySet();
+
     private final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(2, new ThreadFactoryBuilder()
             .setNameFormat("Nedologin-Worker-%d")
             .build());
+
     private final Map<Identifier, HandlerPlugin> plugins = new ConcurrentHashMap<>();
 
     private PlayerLoginHandler(Stream<Identifier> plugins) {
@@ -38,24 +36,12 @@ public final class PlayerLoginHandler {
     public void loadPlugin(Identifier rl) {
         if (this.plugins.containsKey(rl)) return;
         Nedologin.logger.info("Loading plugin {}", rl.toString());
-        HandlerPlugin plugin = NLRegistries.PLUGINS.get(rl).orElseThrow(() -> {
-            return new IllegalArgumentException("No such plugin found: " + rl);
-        }).get();
+        HandlerPlugin plugin = NLRegistries.PLUGINS.get(rl).orElseThrow(() ->
+                new IllegalArgumentException("No such plugin found: " + rl)).get();
 
         // Should not be possible though
         Optional.ofNullable(this.plugins.put(rl, plugin)).ifPresent(HandlerPlugin::disable);
         plugin.enable(executor);
-    }
-
-    public void unloadPlugin(Identifier rl) {
-        Optional.ofNullable(plugins.remove(rl)).ifPresent(p -> {
-            p.disable();
-            Nedologin.logger.info("Unloaded plugin {}", rl.toString());
-        });
-    }
-
-    public Collection<Identifier> listPlugins() {
-        return new ImmutableSet.Builder<Identifier>().addAll(this.plugins.keySet()).build();
     }
 
     public static void initLoginHandler(Stream<Identifier> pluginList) {
@@ -71,7 +57,7 @@ public final class PlayerLoginHandler {
 
     public void login(String id, String pwd) {
         id = id.toLowerCase();
-        MinecraftServer server = ServerUtil.getServer();
+        MinecraftServer server = NLConstants.minecraftServer;
         Login login = getLoginByName(id);
         ServerPlayerEntity player = server.getPlayerManager().getPlayer(id);
 
@@ -91,35 +77,13 @@ public final class PlayerLoginHandler {
             postLogin(player, login);
         } else {
             Nedologin.logger.warn("Player {} tried to login with a wrong password.", id);
-            //player.onDisconnect();
             player.networkHandler.disconnect(Text.literal("Wrong Password."));
         }
-    }
-
-    public void playerJoin(final ServerPlayerEntity player) {
-        Login login = new Login(player);
-        loginList.add(login);
-        plugins.values().forEach(p -> p.preLogin(player, login));
-    }
-
-    public void playerLeave(final ServerPlayerEntity player) {
-        loginList.removeIf(l -> l.name.equals(player.getStringifiedName()));
-        plugins.values().forEach(p -> p.preLogout(player));
-    }
-
-    public void postLogin(final ServerPlayerEntity player, final Login login) {
-        plugins.values().forEach(p -> p.postLogin(player, login));
-    }
-
-    public boolean hasPlayerLoggedIn(String id) {
-        return loginList.stream().noneMatch(e -> e.name.equals(id.toLowerCase()));
     }
 
     public void stop() {
         Nedologin.logger.info("Shutting down player login handler");
         Nedologin.logger.info("Disabling all plugins");
-        this.plugins.values().forEach(HandlerPlugin::disable);
-        this.plugins.clear();
         executor.shutdown();
         try {
             if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -130,7 +94,23 @@ public final class PlayerLoginHandler {
         }
     }
 
-    private Login getLoginByName(String name) {
+    public void postLogin(final ServerPlayerEntity player, final Login login) {
+        plugins.values().forEach(p -> p.postLogin(player, login));
+    }
+
+    public void playerJoin(final ServerPlayerEntity player) {
+        Login login = new Login(player);
+        loginList.add(login);
+        plugins.values().forEach(p -> p.preLogin(player, login));
+    }
+
+    public void playerLeave(ServerPlayerEntity player) {
+        plugins.values().forEach(p -> p.preLogout(player, getLoginByName(player.getStringifiedName())));
+        loginList.removeIf(l -> l.name.equals(player.getGameProfile().name()));
+    }
+
+    @Nullable
+    public Login getLoginByName(String name) {
         return loginList.stream().filter(l -> l.name.equals(name)).findAny().orElse(null);
     }
 }

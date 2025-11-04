@@ -1,6 +1,5 @@
 package ru.marduk.nedologin.server.storage;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import ru.marduk.nedologin.Nedologin;
 import ru.marduk.nedologin.server.NLRegistries;
@@ -13,17 +12,17 @@ public class NLStorage {
         return INSTANCE;
     }
 
-    public static void initialize(String provider, MinecraftServer server) {
+    public static void initialize(String provider) {
         if (INSTANCE == null) {
             try {
-                INSTANCE = new NLStorage(provider, server);
+                INSTANCE = new NLStorage(provider);
             } catch (Exception e) {
                 Nedologin.logger.fatal("Failed to initialize login provider '{}': {}", provider, e.getMessage());
             }
         }
     }
 
-    private NLStorage(String provider, MinecraftServer server) {
+    private NLStorage(String provider) {
         storageProvider = NLRegistries.STORAGE_PROVIDERS.get(Identifier.of("nedologin", provider))
                 .orElseThrow(() -> new RuntimeException("Storage provider not found: " + provider))
                 .get();

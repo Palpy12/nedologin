@@ -30,10 +30,10 @@ public abstract class PlayerManagerMixin {
         }
 
         // && !NLConfig.SERVER.autoRegister.get()
-        if (!NLStorage.instance().storageProvider.registered(configEntry.name())) {
-            // this sounds like that one ""
-            Nedologin.logger.warn("Player {} tried to register (automatic registration is disabled)", configEntry.name());
-            cir.setReturnValue(Text.literal("Automatic registration is disabled on this server."));
-        }
+        //if (!NLStorage.instance().storageProvider.registered(configEntry.name())) {
+        //    // this sounds like that one ""
+        //    Nedologin.logger.warn("Player {} tried to register (automatic registration is disabled)", configEntry.name());
+        //    cir.setReturnValue(Text.literal("Automatic registration is disabled on this server."));
+        //}
     }
 }

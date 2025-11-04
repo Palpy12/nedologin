@@ -1,10 +1,8 @@
 package ru.marduk.nedologin.server.storage;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
-import org.mindrot.jbcrypt.BCrypt;
-import ru.marduk.nedologin.NLConfig;
-import ru.marduk.nedologin.NLConstants;
+import net.minecraft.util.math.Position;
+import net.minecraft.world.GameMode;
 import ru.marduk.nedologin.Nedologin;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,8 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StorageProviderFile implements StorageProvider {
@@ -41,7 +39,8 @@ public class StorageProviderFile implements StorageProvider {
     @Override
     public boolean checkPassword(String username, String password) {
         if (entries.containsKey(username)) {
-            return BCrypt.checkpw(username, password);
+            //BCrypt.checkpw(username, password);
+            return Objects.equals(entries.get(username).password, password);
         }
         return false;
     }
@@ -60,7 +59,8 @@ public class StorageProviderFile implements StorageProvider {
     @Override
     public void register(String username, String password) {
         if (!entries.containsKey(username)) {
-            entries.put(username, newEntry(username, BCrypt.with(BCrypt.Version.VERSION_2Y).hashToString(NLConstants.BCRYPT_COST, password.toCharArray())));
+            //BCrypt.with(BCrypt.Version.VERSION_2Y).hashToString(NLConstants.BCRYPT_COST, password.toCharArray())
+            entries.put(username, newEntry(username, password));
             dirty = true;
         }
     }
@@ -74,24 +74,6 @@ public class StorageProviderFile implements StorageProvider {
             Nedologin.logger.error("Unable to save entries", ex);
             throw ex;
         }
-    }
-
-    @Override
-    public void changePassword(String username, String newPassword) {
-        if (entries.containsKey(username)) {
-            dirty = true;
-            entries.get(username).password = BCrypt.with(BCrypt.Version.VERSION_2Y).hashToString(NLConstants.BCRYPT_COST, newPassword.toCharArray());
-        }
-    }
-
-    @Override
-    public boolean dirty() {
-        return dirty;
-    }
-
-    @Override
-    public Collection<String> getAllRegisteredUsername() {
-        return new ImmutableList.Builder<String>().addAll(entries.keySet()).build();
     }
 
     private static POJOUserEntry newEntry(String username, String password) {

@@ -1,12 +1,14 @@
 package ru.marduk.nedologin.server;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
+import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.server.handler.HandlerPlugin;
+import ru.marduk.nedologin.server.handler.plugins.*;
 import ru.marduk.nedologin.server.storage.StorageProvider;
 import ru.marduk.nedologin.server.storage.StorageProviderFile;
 import ru.marduk.nedologin.server.storage.StorageProviderMariaDB;
 import ru.marduk.nedologin.server.storage.StorageProviderSQLite;
-import ru.marduk.nedologin.utils.ServerUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,9 +37,17 @@ public class NLRegistries<S> {
     public static final NLRegistries<StorageProvider> STORAGE_PROVIDERS = new NLRegistries<>();
 
     static {
+        // Default plugins
+        PLUGINS.register(Identifier.of("nedologin", "auto_save"), AutoSave::new);
+        PLUGINS.register(Identifier.of("nedologin", "protect_coord"), ProtectCoord::new);
+        PLUGINS.register(Identifier.of("nedologin", "resend_request"), ResendRequest::new);
+        PLUGINS.register(Identifier.of("nedologin", "restrict_game_type"), RestrictGameType::new);
+        PLUGINS.register(Identifier.of("nedologin", "restrict_movement"), RestrictMovement::new);
+        PLUGINS.register(Identifier.of("nedologin", "timeout"), Timeout::new);
+        
         // Default storage providers
         STORAGE_PROVIDERS.register(Identifier.of("nedologin", "file"),
-                () -> mustCall(() -> new StorageProviderFile(ServerUtil.getServerRoot().resolve("nl_entries.db"))));
+                () -> mustCall(() -> new StorageProviderFile(FabricLoader.getInstance().getGameDir().resolve("nl_entries.db"))));
         STORAGE_PROVIDERS.register(Identifier.of("nedologin", "sqlite"),
                 () -> mustCall((Callable<StorageProvider>) StorageProviderSQLite::new));
         STORAGE_PROVIDERS.register(Identifier.of("nedologin", "mariadb"),

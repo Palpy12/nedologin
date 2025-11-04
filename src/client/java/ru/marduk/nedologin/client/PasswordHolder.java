@@ -1,7 +1,5 @@
 package ru.marduk.nedologin.client;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import ru.marduk.nedologin.Nedologin;
 
 import java.io.IOException;
@@ -10,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-@Environment(EnvType.CLIENT)
 public final class PasswordHolder {
     private static PasswordHolder INSTANCE;
 
@@ -24,7 +21,6 @@ public final class PasswordHolder {
     public static final Path PASSWORD_FILE_PATH = Paths.get(".", ".nl_password");
 
     private String password = null;
-    private String pendingPassword = null;
     private boolean initialized = false;
 
     private PasswordHolder() {
@@ -59,25 +55,6 @@ public final class PasswordHolder {
         initialized = true;
         this.password = password;
         save();
-    }
-
-    public void setPendingPassword(String o) {
-        if (!initialized) throw new IllegalStateException();
-        this.pendingPassword = o;
-        save();
-    }
-
-    public void applyPending() {
-        if (!initialized) throw new IllegalStateException();
-        if (this.pendingPassword == null) return;
-        this.password = pendingPassword;
-        save();
-        this.pendingPassword = null;
-    }
-
-    public void dropPending() {
-        if (!initialized) throw new IllegalStateException();
-        this.pendingPassword = null;
     }
 
     public String password() {

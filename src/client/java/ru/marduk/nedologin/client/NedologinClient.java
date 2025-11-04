@@ -7,6 +7,5 @@ public class NedologinClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientLoader.clientSetup();
-        ChangePasswordCommand.register();
     }
 }
