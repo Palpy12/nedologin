@@ -1,6 +1,7 @@
 package ru.marduk.nedologin.server.storage;
 
 import ru.marduk.nedologin.Nedologin;
+import ru.marduk.nedologin.utils.SHA256;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,7 +30,6 @@ public abstract class StorageProviderSQL {
 
     public boolean checkPassword(String username, String password) {
         try {
-            checkValidity();
             PreparedStatement st = conn.prepareStatement("""
                     SELECT password
                     FROM nl_entries
@@ -47,7 +47,6 @@ public abstract class StorageProviderSQL {
 
     public void unregister(String username) {
         try {
-            checkValidity();
             PreparedStatement st = conn.prepareStatement("""
                     DELETE
                     FROM nl_entries
@@ -61,7 +60,6 @@ public abstract class StorageProviderSQL {
 
     public boolean registered(String username) {
         try {
-            checkValidity();
             PreparedStatement st = conn.prepareStatement("SELECT EXISTS(SELECT * from nl_entries WHERE username = ?)");
             st.setString(1, username);
             ResultSet rs = st.executeQuery();
@@ -75,7 +73,6 @@ public abstract class StorageProviderSQL {
     public void register(String username, String password) {
         if (registered(username)) return;
         try {
-            checkValidity();
             PreparedStatement st = conn.prepareStatement("INSERT INTO nl_entries (username, password)\n" +
                     "VALUES (?, ?)");
             st.setString(1, username);
@@ -86,12 +83,17 @@ public abstract class StorageProviderSQL {
         }
     }
 
-    public void save() {
-        // NO-OP
-    }
-
-    // Reconnects the server to the database in case the connection becomes invalid
-    protected void checkValidity() throws SQLException {
-        // Literally nothing
+    public void changePassword(String username, String newPassword) {
+        try {
+            PreparedStatement st = conn.prepareStatement("""
+                    UPDATE nl_entries
+                    SET password=?
+                    WHERE username = ?""");
+            st.setString(1, SHA256.getSHA256(newPassword));
+            st.setString(2, username);
+            st.execute();
+        } catch (SQLException ex) {
+            Nedologin.logger.error("Error updating entry", ex);
+        }
     }
 }
