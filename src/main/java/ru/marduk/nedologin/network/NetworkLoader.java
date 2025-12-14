@@ -10,6 +10,7 @@ public class NetworkLoader {
 
     public static void registerPayloads() {
         PayloadTypeRegistry.playC2S().register(MessageLogin.ID, MessageLogin.CODEC);
+        PayloadTypeRegistry.playS2C().register(MessageRequestLogin.ID, MessageRequestLogin.CODEC);
     }
 
     public static void registerServerHandlers() {

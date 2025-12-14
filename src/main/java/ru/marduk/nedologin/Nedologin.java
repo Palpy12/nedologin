@@ -12,9 +12,6 @@ import ru.marduk.nedologin.server.storage.NLStorage;
 public final class Nedologin implements ModInitializer {
     public static Logger logger = LogManager.getLogger(NLConstants.MODID);
 
-    //container.getEventBus().addListener(CommandLoader::commonSetup);
-    //container.registerConfig(ModConfig.Type.SERVER, NLConfig.SERVER_SPEC);
-
     @Override
     public void onInitialize() {
         ServerLoader.serverSetup();

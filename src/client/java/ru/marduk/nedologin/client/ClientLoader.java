@@ -1,6 +1,5 @@
 package ru.marduk.nedologin.client;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import ru.marduk.nedologin.network.*;
 
@@ -12,8 +11,8 @@ public final class ClientLoader {
             PasswordHolder.instance().initialize(UUID.randomUUID().toString());
         }
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            ClientPlayNetworking.send(new MessageLogin(PasswordHolder.instance().password()));
-        });
+        ClientPlayNetworking.registerGlobalReceiver(MessageRequestLogin.ID, (message, context) ->
+            ClientPlayNetworking.send(new MessageLogin(PasswordHolder.instance().password()))
+        );
     }
 }

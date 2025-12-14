@@ -7,7 +7,7 @@ import java.util.Objects;
 public final class Login {
     public final String name, gamemode;
     public final long time;
-    public final double posX, posY, posZ;
+    public final double posX, posY, posZ, rotX, rotY;
 
     Login(ServerPlayerEntity player) {
         this.name = player.getGameProfile().name().toLowerCase();
@@ -16,6 +16,8 @@ public final class Login {
         this.posX = player.getX();
         this.posY = player.getY();
         this.posZ = player.getZ();
+        this.rotX = player.getYaw();
+        this.rotY = player.getPitch();
     }
 
     @Override
@@ -23,11 +25,11 @@ public final class Login {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Login login = (Login) o;
-        return time == login.time && Double.compare(login.posX, posX) == 0 && Double.compare(login.posY, posY) == 0 && Double.compare(login.posZ, posZ) == 0 && name.equals(login.name) && gamemode.equals(login.gamemode);
+        return time == login.time && Double.compare(login.posX, posX) == 0 && Double.compare(login.posY, posY) == 0 && Double.compare(login.posZ, posZ) == 0 && Double.compare(login.rotX, rotX) == 0 && Double.compare(login.rotY, rotY) == 0 && name.equals(login.name) && gamemode.equals(login.gamemode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, gamemode, time, posX, posY, posZ);
+        return Objects.hash(name, gamemode, time, posX, posY, posZ, rotX, rotY);
     }
 }

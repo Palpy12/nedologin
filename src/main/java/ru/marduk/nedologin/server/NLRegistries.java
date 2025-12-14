@@ -31,7 +31,6 @@ public class NLRegistries<S> {
 
     static {
         // Default plugins
-        PLUGINS.register(Identifier.of("nedologin", "auto_save"), AutoSave::new);
         PLUGINS.register(Identifier.of("nedologin", "protect_coord"), ProtectCoord::new);
         PLUGINS.register(Identifier.of("nedologin", "resend_request"), ResendRequest::new);
         PLUGINS.register(Identifier.of("nedologin", "restrict_game_type"), RestrictGameType::new);
