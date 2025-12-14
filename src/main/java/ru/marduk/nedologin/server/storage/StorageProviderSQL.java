@@ -38,8 +38,7 @@ public abstract class StorageProviderSQL {
             ResultSet rs = st.executeQuery();
             if (!rs.next()) return false;
 
-            return true;
-            //return BCrypt.verifyer().verify(password.toCharArray(), rs.getString("password")).verified;
+            return rs.getString("password").equals(password);
         } catch (SQLException ex) {
             Nedologin.logger.error("Error looking up password", ex);
             return false;
@@ -78,9 +77,9 @@ public abstract class StorageProviderSQL {
         try {
             checkValidity();
             PreparedStatement st = conn.prepareStatement("INSERT INTO nl_entries (username, password)\n" +
-                    "VALUES (?, ?, ?)");
+                    "VALUES (?, ?)");
             st.setString(1, username);
-            st.setString(2, /*BCrypt.with(BCrypt.Version.VERSION_2Y).hashToString(NLConstants.BCRYPT_COST, password.toCharArray())*/"t");
+            st.setString(2, password);
             st.execute();
         } catch (SQLException ex) {
             Nedologin.logger.error("Error registering entry", ex);

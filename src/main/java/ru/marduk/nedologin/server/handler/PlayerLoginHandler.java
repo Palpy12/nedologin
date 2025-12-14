@@ -1,6 +1,7 @@
 package ru.marduk.nedologin.server.handler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.mojang.authlib.exceptions.MinecraftClientHttpException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -10,11 +11,13 @@ import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.Nedologin;
 import ru.marduk.nedologin.server.NLRegistries;
 import ru.marduk.nedologin.server.storage.NLStorage;
+import ru.marduk.nedologin.utils.SHA256;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 public final class PlayerLoginHandler {
@@ -69,16 +72,20 @@ public final class PlayerLoginHandler {
         loginList.remove(login);
 
         String encoded_pwd = SHA256.getSHA256(pwd);
-        if (!NLStorage.instance().storageProvider.registered(id)) {
-            NLStorage.instance().storageProvider.register(id, encoded_pwd);
-            Nedologin.logger.info("Player {} has successfully registered.", id);
-            postLogin(player, login);
-        } else if (NLStorage.instance().storageProvider.checkPassword(id, encoded_pwd)) {
-            Nedologin.logger.info("Player {} has successfully logged in.", id);
-            postLogin(player, login);
-        } else {
-            Nedologin.logger.warn("Player {} tried to login with a wrong password.", id);
-            player.networkHandler.disconnect(Text.literal("Wrong Password."));
+        try {
+            if (!NLStorage.instance().storageProvider.registered(id)) {
+                NLStorage.instance().storageProvider.register(id, encoded_pwd);
+                Nedologin.logger.info("Player {} has successfully registered.", id);
+                postLogin(player, login);
+            } else if (NLStorage.instance().storageProvider.checkPassword(id, encoded_pwd)) {
+                Nedologin.logger.info("Player {} has successfully logged in.", id);
+                postLogin(player, login);
+            } else {
+                Nedologin.logger.warn("Player {} tried to login with a wrong password.", id);
+                player.networkHandler.disconnect(Text.literal("Wrong Password."));
+            }
+        } catch (MinecraftClientHttpException e) {
+            Logger.getGlobal().info(e.toString());
         }
     }
 

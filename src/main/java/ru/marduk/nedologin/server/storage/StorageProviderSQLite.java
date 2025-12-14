@@ -7,6 +7,6 @@ import java.sql.SQLException;
 
 public final class StorageProviderSQLite extends StorageProviderSQL {
     public StorageProviderSQLite() throws SQLException {
-        super(DriverManager.getConnection("jdbc:sqlite:" + FabricLoader.getInstance().getGameDir().resolve("nl_entries.db")));
+        super(DriverManager.getConnection("jdbc:sqlite:" + FabricLoader.getInstance().getGameDir().resolve("nl_entries.dat")));
     }
 }

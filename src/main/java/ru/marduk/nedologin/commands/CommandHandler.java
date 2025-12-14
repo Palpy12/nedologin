@@ -1,8 +1,12 @@
-package ru.marduk.nedologin;
+package ru.marduk.nedologin.commands;
 
-import net.fabricmc.api.ModInitializer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+
+import com.mojang.brigadier.arguments.StringArgumentType;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.text.Text;
+import ru.marduk.nedologin.server.storage.NLStorage;
+
 import static net.minecraft.server.command.CommandManager.*;
 
 public class CommandHandler
@@ -10,7 +14,7 @@ public class CommandHandler
     public static void init()
     {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
-                dispatcher.register(literal("spermobak").requires(source -> source.hasPermissionLevel(4)
+                dispatcher.register(literal("spermobak").requires(source -> source.hasPermissionLevel(4))
                     .then(literal("unregister")
                         .then(argument("name", StringArgumentType.string())
                             .executes(context -> {
@@ -22,9 +26,9 @@ public class CommandHandler
                                                 false);
                                     return 0;
                                 }
-                                NLStorage.instance().storageProvider.unregister(name);
+                                NLStorage.instance().storageProvider.unregister(name.toLowerCase());
 
-                                context.getSource().sendSuccess(() -> 
+                                context.getSource().sendFeedback(() ->
                                         Text.literal("Убрали, человека"),
                                         false);
                                 return 1;
@@ -34,6 +38,6 @@ public class CommandHandler
                             Text.literal("Я спермобак, и я всегда на раздаче!"), false);
 
                     return 1;
-                })));
+                }))));
     }
 }
