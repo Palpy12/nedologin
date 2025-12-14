@@ -6,9 +6,7 @@ import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.Nedologin;
 import ru.marduk.nedologin.server.handler.PlayerLoginHandler;
 import ru.marduk.nedologin.server.storage.NLStorage;
-//import ru.marduk.nedologin.NLConfig;
 
-import java.io.IOException;
 import java.util.stream.Stream;
 
 public final class ServerLoader {
@@ -31,11 +29,7 @@ public final class ServerLoader {
 
             Nedologin.logger.info("Saving all entries");
             if (NLStorage.instance() != null) {
-                try {
-                    NLStorage.instance().storageProvider.save();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                NLStorage.instance().storageProvider.save();
             }
         });
     }

@@ -19,11 +19,7 @@ public final class AutoSave implements HandlerPlugin {
         this.future = executor.scheduleAtFixedRate(() -> {
             Nedologin.logger.info("Auto saving entries");
             long start = System.currentTimeMillis();
-            try {
-                NLStorage.instance().storageProvider.save();
-            } catch (IOException e) {
-                Nedologin.logger.error("Failed saving nedologin entries", e);
-            }
+            NLStorage.instance().storageProvider.save();
             Nedologin.logger.info("Done! Took " + (System.currentTimeMillis() - start) + "ms.");
         }, 0, 5, TimeUnit.MINUTES);
     }

@@ -1,17 +1,13 @@
 package ru.marduk.nedologin.server.storage;
 
-import com.google.common.collect.ImmutableSet;
-import org.mindrot.jbcrypt.BCrypt;
-import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.Nedologin;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 
-public abstract class StorageProviderSQL implements StorageProvider {
+public abstract class StorageProviderSQL {
     protected Connection conn;
 
     public StorageProviderSQL(Connection conn) {
@@ -31,7 +27,6 @@ public abstract class StorageProviderSQL implements StorageProvider {
         }
     }
 
-    @Override
     public boolean checkPassword(String username, String password) {
         try {
             checkValidity();
@@ -51,7 +46,6 @@ public abstract class StorageProviderSQL implements StorageProvider {
         }
     }
 
-    @Override
     public void unregister(String username) {
         try {
             checkValidity();
@@ -66,7 +60,6 @@ public abstract class StorageProviderSQL implements StorageProvider {
         }
     }
 
-    @Override
     public boolean registered(String username) {
         try {
             checkValidity();
@@ -80,7 +73,6 @@ public abstract class StorageProviderSQL implements StorageProvider {
         }
     }
 
-    @Override
     public void register(String username, String password) {
         if (registered(username)) return;
         try {
@@ -95,7 +87,6 @@ public abstract class StorageProviderSQL implements StorageProvider {
         }
     }
 
-    @Override
     public void save() {
         // NO-OP
     }

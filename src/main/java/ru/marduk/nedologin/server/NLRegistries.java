@@ -1,13 +1,9 @@
 package ru.marduk.nedologin.server;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
-import ru.marduk.nedologin.NLConstants;
 import ru.marduk.nedologin.server.handler.HandlerPlugin;
 import ru.marduk.nedologin.server.handler.plugins.*;
-import ru.marduk.nedologin.server.storage.StorageProvider;
-import ru.marduk.nedologin.server.storage.StorageProviderFile;
-import ru.marduk.nedologin.server.storage.StorageProviderMariaDB;
+import ru.marduk.nedologin.server.storage.StorageProviderSQL;
 import ru.marduk.nedologin.server.storage.StorageProviderSQLite;
 
 import java.util.HashMap;
@@ -30,11 +26,8 @@ public class NLRegistries<S> {
         return Optional.ofNullable(plugins.get(rl));
     }
 
-    private NLRegistries() {
-    }
-
     public static final NLRegistries<HandlerPlugin> PLUGINS = new NLRegistries<>();
-    public static final NLRegistries<StorageProvider> STORAGE_PROVIDERS = new NLRegistries<>();
+    public static final NLRegistries<StorageProviderSQL> STORAGE_PROVIDERS = new NLRegistries<>();
 
     static {
         // Default plugins
@@ -46,12 +39,8 @@ public class NLRegistries<S> {
         PLUGINS.register(Identifier.of("nedologin", "timeout"), Timeout::new);
         
         // Default storage providers
-        STORAGE_PROVIDERS.register(Identifier.of("nedologin", "file"),
-                () -> mustCall(() -> new StorageProviderFile(FabricLoader.getInstance().getGameDir().resolve("nl_entries.db"))));
         STORAGE_PROVIDERS.register(Identifier.of("nedologin", "sqlite"),
-                () -> mustCall((Callable<StorageProvider>) StorageProviderSQLite::new));
-        STORAGE_PROVIDERS.register(Identifier.of("nedologin", "mariadb"),
-                () -> mustCall((Callable<StorageProvider>) StorageProviderMariaDB::new));
+                () -> mustCall((Callable<StorageProviderSQL>) StorageProviderSQLite::new));
     }
 
     private static <S> S mustCall(Callable<S> callable) {

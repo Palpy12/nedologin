@@ -5,7 +5,7 @@ import ru.marduk.nedologin.Nedologin;
 import ru.marduk.nedologin.server.NLRegistries;
 
 public class NLStorage {
-    public final StorageProvider storageProvider;
+    public final StorageProviderSQL storageProvider;
     private static NLStorage INSTANCE;
 
     public static NLStorage instance() {
