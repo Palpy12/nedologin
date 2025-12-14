@@ -1,3 +1,4 @@
+// vim: ft=java
 package ru.marduk.nedologin;
 
 import java.util.Arrays;
