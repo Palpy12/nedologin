@@ -68,11 +68,12 @@ public final class PlayerLoginHandler {
 
         loginList.remove(login);
 
+        String encoded_pwd = SHA256.getSHA256(pwd);
         if (!NLStorage.instance().storageProvider.registered(id)) {
-            NLStorage.instance().storageProvider.register(id, pwd);
+            NLStorage.instance().storageProvider.register(id, encoded_pwd);
             Nedologin.logger.info("Player {} has successfully registered.", id);
             postLogin(player, login);
-        } else if (NLStorage.instance().storageProvider.checkPassword(id, pwd)) {
+        } else if (NLStorage.instance().storageProvider.checkPassword(id, encoded_pwd)) {
             Nedologin.logger.info("Player {} has successfully logged in.", id);
             postLogin(player, login);
         } else {
