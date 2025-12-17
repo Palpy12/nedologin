@@ -19,10 +19,12 @@ public final class ServerLoader {
             ServerLifecycleEvents.SERVER_STARTED.register(server -> {
                 NLConstants.setServer(server);
                 Stream<Identifier> plugins = Stream.of(
-                        //Identifier.of("nedologin", "protect_coord"),
+                        Identifier.of("nedologin", "protect_coord"),
                         //Identifier.of("nedologin", "restrict_game_type"),
-                        Identifier.of("nedologin", "timeout"),
-                        Identifier.of("nedologin", "restrict_movement")
+                        Identifier.of("nedologin", "timeout")
+
+                        //Эта херня всё ломает
+                        //Identifier.of("nedologin", "restrict_movement")
                 );
                 PlayerLoginHandler.initLoginHandler(plugins);
                 ServerPlayConnectionEvents.JOIN.register((handler, sender, minecraftServer) ->

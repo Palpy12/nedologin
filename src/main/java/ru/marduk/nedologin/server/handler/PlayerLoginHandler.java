@@ -121,4 +121,8 @@ public final class PlayerLoginHandler {
     public Login getLoginByName(String name) {
         return loginList.stream().filter(l -> l.name.equals(name)).findAny().orElse(null);
     }
+
+    public boolean hasPlayerLoggedIn(String id) {
+        return loginList.stream().noneMatch(e -> e.name.equals(id.toLowerCase()));
+    }
 }
