@@ -21,9 +21,11 @@ public final class ServerLoader {
                 Stream<Identifier> plugins = Stream.of(
                         Identifier.of("nedologin", "protect_coord"),
                         //Identifier.of("nedologin", "restrict_game_type"),
-                        Identifier.of("nedologin", "timeout")
+                        Identifier.of("nedologin", "timeout"),
+                        Identifier.of("nedologin", "resend_request")
 
                         //Эта херня всё ломает
+                        //Вероятно из-за того, что она выполняется ассинхронно и игра не может нормально установить положение игрока
                         //Identifier.of("nedologin", "restrict_movement")
                 );
                 PlayerLoginHandler.initLoginHandler(plugins);

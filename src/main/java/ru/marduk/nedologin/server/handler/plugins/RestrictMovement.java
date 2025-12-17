@@ -38,8 +38,8 @@ public final class RestrictMovement implements HandlerPlugin {
     }
 
     @Override
-    public void preLogout(ServerPlayerEntity player, Login login) {
-        Optional.ofNullable(futures.remove(login.name))
+    public void preLogout(ServerPlayerEntity player) {
+        Optional.ofNullable(futures.remove(player.getGameProfile().name().toLowerCase()))
                 .ifPresent(f -> f.cancel(true));
     }
 

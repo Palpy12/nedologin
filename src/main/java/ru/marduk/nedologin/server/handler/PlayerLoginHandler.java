@@ -113,7 +113,7 @@ public final class PlayerLoginHandler {
     }
 
     public void playerLeave(ServerPlayerEntity player) {
-        plugins.values().forEach(p -> p.preLogout(player, getLoginByName(player.getStringifiedName())));
+        plugins.values().forEach(p -> p.preLogout(player));
         loginList.removeIf(l -> l.name.equals(player.getGameProfile().name()));
     }
 

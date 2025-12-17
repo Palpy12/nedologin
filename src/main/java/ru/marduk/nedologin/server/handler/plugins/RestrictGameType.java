@@ -17,8 +17,8 @@ public final class RestrictGameType implements HandlerPlugin {
     }
 
     @Override
-    public void preLogout(ServerPlayerEntity player, Login login) {
-        player.changeGameMode(GameMode.byId(login.gamemode));
+    public void preLogout(ServerPlayerEntity player) {
+        //player.changeGameMode(GameMode.byId(login.gamemode));
     }
 
     @Override

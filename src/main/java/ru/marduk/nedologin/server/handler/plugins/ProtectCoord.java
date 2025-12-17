@@ -26,7 +26,7 @@ public final class ProtectCoord implements HandlerPlugin {
     }
 
     @Override
-    public void preLogout(ServerPlayerEntity player, Login login) {
+    public void preLogout(ServerPlayerEntity player) {
         try {
             if (PlayerLoginHandler.instance().hasPlayerLoggedIn(player.getName().getString())) {
                 final Vec3d pos = player.getEntityPos();

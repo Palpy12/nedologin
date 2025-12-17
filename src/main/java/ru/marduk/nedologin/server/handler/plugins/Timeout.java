@@ -36,7 +36,7 @@ public final class Timeout implements HandlerPlugin {
     }
 
     @Override
-    public void preLogout(ServerPlayerEntity player, Login login) {
+    public void preLogout(ServerPlayerEntity player) {
         Optional.ofNullable(futures.remove(player.getGameProfile().name().toLowerCase()))
                 .ifPresent(f -> f.cancel(true));
     }
